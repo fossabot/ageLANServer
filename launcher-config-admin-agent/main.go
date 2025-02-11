@@ -30,7 +30,7 @@ func main() {
 			os.Exit(common.ErrSignal)
 		}
 	}()
-	errorCode := internal.RunIpcServer()
+	errorCode := internal.RunIpcServer(os.Args[1])
 	_ = lock.Unlock()
 	os.Exit(errorCode)
 }

@@ -115,11 +115,11 @@ func (users *MainUsers) GetOrCreateUser(gameId string, remoteAddr string, isXbox
 	mainUser, ok := users.store.Load(identifier)
 	if !ok {
 		var profileMetadata string
-		if gameId == common.GameAoE3 {
+		if gameId == common.GameAoE3 || gameId == common.GameAoM {
 			profileMetadata = `{"v":1,"twr":0,"wlr":0,"ai":1,"ac":0}`
 		}
 		var profileUIntFlag1 uint8
-		if gameId == common.GameAoE3 {
+		if gameId == common.GameAoE3 || gameId == common.GameAoM {
 			profileUIntFlag1 = 1
 		}
 		mainUser = users.generate(identifier, isXbox, platformUserId, profileMetadata, profileUIntFlag1, alias)

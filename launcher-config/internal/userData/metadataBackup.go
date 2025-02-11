@@ -12,6 +12,8 @@ func Metadata(gameId string) Data {
 		path = "metadata"
 	case common.GameAoE3:
 		path = filepath.Join("Common", "RLink")
+	case common.GameAoM:
+		path = filepath.Join("temp", "RLink")
 	}
 	return Data{Path: path}
 }

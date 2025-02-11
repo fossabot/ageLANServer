@@ -32,13 +32,13 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		updateReturnError(gameTitle, &w)
 		return
 	}
-	if gameTitle != common.GameAoE2 {
+	if gameTitle != common.GameAoE2 && gameTitle != common.GameAoM {
 		q.PlatformSessionId = adv.GetPlatformSessionId()
 		q.Joinable = true
 	}
 	advertisements.Update(adv, &q)
 
-	if gameTitle != common.GameAoE2 {
+	if gameTitle != common.GameAoE2 && gameTitle != common.GameAoM {
 		i.JSON(&w,
 			i.A{
 				0,

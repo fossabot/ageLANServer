@@ -5,7 +5,6 @@ import (
 	"fmt"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/luskaner/ageLANServer/common"
-	commonCmd "github.com/luskaner/ageLANServer/common/cmd"
 	"github.com/luskaner/ageLANServer/common/executor"
 	commonProcess "github.com/luskaner/ageLANServer/common/process"
 	launcherCommon "github.com/luskaner/ageLANServer/launcher-common"
@@ -33,7 +32,7 @@ func removeUserCert() bool {
 
 func restoreMetadata() bool {
 	fmt.Println("Restoring previously backed up metadata")
-	if userData.Metadata(gameId).Restore(gameId) {
+	if userData.Metadata(cmd.GameId).Restore(cmd.GameId) {
 		fmt.Println("Successfully restored metadata")
 		return true
 	} else {
@@ -44,7 +43,7 @@ func restoreMetadata() bool {
 
 func restoreProfiles() bool {
 	fmt.Println("Restoring previously backed up profiles")
-	if userData.RestoreProfiles(gameId, true) {
+	if userData.RestoreProfiles(cmd.GameId, true) {
 		fmt.Println("Successfully restored profiles")
 		return true
 	} else {
@@ -93,14 +92,14 @@ var setUpCmd = &cobra.Command{
 				os.Exit(common.ErrSignal)
 			}
 		}()
-		if gameId == common.GameAoE1 {
+		if cmd.GameId == common.GameAoE1 {
 			BackupMetadata = false
 		}
-		if (BackupMetadata || BackupProfiles) && !common.SupportedGames.ContainsOne(gameId) {
+		if (BackupMetadata || BackupProfiles) && !common.SupportedGames.ContainsOne(cmd.GameId) {
 			fmt.Println("Invalid game type")
 			os.Exit(launcherCommon.ErrInvalidGame)
 		}
-		fmt.Printf("Setting up configuration for %s...\n", gameId)
+		fmt.Printf("Setting up configuration for %s...\n", cmd.GameId)
 		isAdmin := executor.IsAdmin()
 		if AddUserCertData != nil {
 			fmt.Println("Adding user certificate, authorize it if needed...")
@@ -120,7 +119,7 @@ var setUpCmd = &cobra.Command{
 		}
 		if BackupMetadata {
 			fmt.Println("Backing up metadata")
-			if userData.Metadata(gameId).Backup(gameId) {
+			if userData.Metadata(cmd.GameId).Backup(cmd.GameId) {
 				fmt.Println("Successfully backed up metadata")
 				backedUpMetadata = true
 			} else {
@@ -136,7 +135,7 @@ var setUpCmd = &cobra.Command{
 		}
 		if BackupProfiles {
 			fmt.Println("Backing up profiles")
-			if userData.BackupProfiles(gameId) {
+			if userData.BackupProfiles(cmd.GameId) {
 				fmt.Println("Successfully backed up profiles")
 				backedUpProfiles = true
 			} else {
@@ -164,7 +163,7 @@ var setUpCmd = &cobra.Command{
 		if cmd.AddLocalCertData != nil || !hostMappings.IsEmpty() || cmd.MapCDN {
 			agentStarted := internal.ConnectAgentIfNeeded() == nil
 			if !agentStarted && agentStart && !isAdmin {
-				result := internal.StartAgentIfNeeded()
+				result := internal.StartAgentIfNeeded(cmd.GameId)
 				if !result.Success() {
 					fmt.Println("Failed to start 'config-admin-agent'")
 					if result.Err != nil {
@@ -191,7 +190,7 @@ var setUpCmd = &cobra.Command{
 				}
 				fmt.Println("...")
 			}
-			err, exitCode := internal.RunSetUp(hostMappings, cmd.AddLocalCertData, cmd.MapCDN)
+			err, exitCode := internal.RunSetUp(cmd.GameId, hostMappings, cmd.AddLocalCertData, cmd.MapCDN)
 			if err == nil && exitCode == common.ErrSuccess {
 				if agentStarted {
 					fmt.Println("Successfully communicated with 'config-admin-agent'")
@@ -258,7 +257,6 @@ func InitSetUp() {
 		storeString = "user/" + storeString
 	}
 	cmd.InitSetUp(setUpCmd)
-	commonCmd.GameVarCommand(setUpCmd.Flags(), &gameId)
 	if runtime.GOOS != "linux" {
 		setUpCmd.Flags().BytesBase64VarP(
 			&AddUserCertData,

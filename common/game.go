@@ -8,9 +8,8 @@ const (
 	GameAoE3 = "age3"
 	// GameAoE4 Unsupported
 	GameAoE4 = "age4"
-	// GameAoM Unsupported
-	GameAoM = "athens"
+	GameAoM  = "athens"
 )
 
-var SupportedGames = mapset.NewThreadUnsafeSet[string](GameAoE1, GameAoE2, GameAoE3)
-var AllGames = SupportedGames.Union(mapset.NewThreadUnsafeSet[string](GameAoE4, GameAoM))
+var SupportedGames = mapset.NewThreadUnsafeSet[string](GameAoE1, GameAoE2, GameAoE3, GameAoM)
+var AllGames = SupportedGames.Union(mapset.NewThreadUnsafeSet[string](GameAoE4))

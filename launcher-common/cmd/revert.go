@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/luskaner/ageLANServer/common"
+	commonCmd "github.com/luskaner/ageLANServer/common/cmd"
 	launcherCommon "github.com/luskaner/ageLANServer/launcher-common"
 	"github.com/spf13/cobra"
 )
@@ -18,14 +18,14 @@ func InitRevert(cmd *cobra.Command) {
 		"ip",
 		"i",
 		false,
-		fmt.Sprintf("Remove the IP mappings from the local DNS server that resolve to '%s'", common.Domain),
+		fmt.Sprintf("Remove the IP mappings from the local DNS server"),
 	)
 	cmd.Flags().BoolVarP(
 		&UnmapCDN,
 		"CDN",
 		"c",
 		false,
-		fmt.Sprintf("Remove the mappings from the local DNS server that resolve %s to '%s'", launcherCommon.CDNIP, common.Domain),
+		fmt.Sprintf("Remove the mappings from the local DNS server that resolve %s", launcherCommon.CDNIP),
 	)
 	cmd.Flags().BoolVarP(
 		&RemoveLocalCert,
@@ -41,4 +41,5 @@ func InitRevert(cmd *cobra.Command) {
 		false,
 		"Removes all configuration. Equivalent to the rest of the flags being set without fail-fast.",
 	)
+	commonCmd.GameVarCommand(cmd.Flags(), &GameId)
 }

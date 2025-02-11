@@ -45,7 +45,7 @@ func Platformlogin(w http.ResponseWriter, r *http.Request) {
 	sess, _ = models.GetSessionById(sessionId)
 	relationship.ChangePresence(users, u, 1)
 	profileInfo := u.GetProfileInfo(false)
-	if title == common.GameAoE3 {
+	if title == common.GameAoE3 || title == common.GameAoM {
 		for user := range users.GetUserIds() {
 			if user != u.GetId() {
 				currentSess, currentOk := models.GetSessionByUserId(user)
@@ -84,6 +84,7 @@ func Platformlogin(w http.ResponseWriter, r *http.Request) {
 			i.A{172, profileId, 4, "", t2},
 			i.A{173, profileId, 1, "", t2},
 		}
+	case common.GameAoM:
 	case common.GameAoE3:
 		unknownProfileInfoList = i.A{
 			i.A{291, u.GetId(), 16, "", t2},

@@ -108,7 +108,7 @@ func KillProc(pidPath string, proc *os.Process) (err error) {
 func Kill(exe string) (proc *os.Process, err error) {
 	var pidPath string
 	pidPath, proc, err = Process(exe)
-	if err != nil {
+	if err != nil || proc == nil || pidPath == "" {
 		return
 	}
 	err = KillProc(pidPath, proc)

@@ -4,7 +4,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/luskaner/ageLANServer/common"
-	commonCmd "github.com/luskaner/ageLANServer/common/cmd"
 	"github.com/luskaner/ageLANServer/common/executor"
 	commonProcess "github.com/luskaner/ageLANServer/common/process"
 	launcherCommon "github.com/luskaner/ageLANServer/launcher-common"
@@ -32,7 +31,7 @@ func addUserCerts(removedUserCerts []*x509.Certificate) bool {
 
 func backupMetadata() bool {
 	fmt.Println("Backing up previously restored metadata")
-	if userData.Metadata(gameId).Backup(gameId) {
+	if userData.Metadata(cmd.GameId).Backup(cmd.GameId) {
 		fmt.Println("Successfully backed up metadata")
 		return true
 	} else {
@@ -43,7 +42,7 @@ func backupMetadata() bool {
 
 func backupProfiles() bool {
 	fmt.Println("Backing up previously restored profiles")
-	if userData.BackupProfiles(gameId) {
+	if userData.BackupProfiles(cmd.GameId) {
 		fmt.Println("Successfully backed up profiles")
 		return true
 	} else {
@@ -95,14 +94,14 @@ var revertCmd = &cobra.Command{
 			RestoreProfiles = true
 			reverseFailed = false
 		}
-		if gameId == common.GameAoE1 {
+		if cmd.GameId == common.GameAoE1 {
 			RestoreMetadata = false
 		}
-		if (restoredMetadata || restoredProfiles) && !common.SupportedGames.ContainsOne(gameId) {
+		if (restoredMetadata || restoredProfiles) && !common.SupportedGames.ContainsOne(cmd.GameId) {
 			fmt.Println("Invalid game type")
 			os.Exit(launcherCommon.ErrInvalidGame)
 		}
-		fmt.Printf("Reverting configuration for %s...\n", gameId)
+		fmt.Printf("Reverting configuration for %s...\n", cmd.GameId)
 		if RemoveUserCert {
 			fmt.Println("Removing user certificates, authorize it if needed...")
 			if removedUserCerts, _ := wrapper.RemoveUserCerts(); removedUserCerts != nil {
@@ -116,7 +115,7 @@ var revertCmd = &cobra.Command{
 		}
 		if RestoreMetadata {
 			fmt.Println("Restoring metadata")
-			if userData.Metadata(gameId).Restore(gameId) {
+			if userData.Metadata(cmd.GameId).Restore(cmd.GameId) {
 				fmt.Println("Successfully restored metadata")
 				restoredMetadata = true
 			} else {
@@ -136,7 +135,7 @@ var revertCmd = &cobra.Command{
 		}
 		if RestoreProfiles {
 			fmt.Println("Restoring profiles")
-			if userData.RestoreProfiles(gameId, reverseFailed) {
+			if userData.RestoreProfiles(cmd.GameId, reverseFailed) {
 				fmt.Println("Successfully restored profiles")
 				restoredProfiles = true
 			} else {
@@ -172,7 +171,7 @@ var revertCmd = &cobra.Command{
 				fmt.Println("...")
 			}
 			var err error
-			err, errorCode = internal.RunRevert(cmd.UnmapIPs, cmd.RemoveLocalCert, cmd.UnmapCDN, !cmd.RemoveAll)
+			err, errorCode = internal.RunRevert(cmd.GameId, cmd.UnmapIPs, cmd.RemoveLocalCert, cmd.UnmapCDN, !cmd.RemoveAll)
 			if err == nil && errorCode == common.ErrSuccess {
 				if agentConnected {
 					fmt.Println("Successfully communicated with 'config-admin-agent'")
@@ -269,7 +268,6 @@ func InitRevert() {
 		storeString = "user/" + storeString
 	}
 	cmd.InitRevert(revertCmd)
-	commonCmd.GameVarCommand(revertCmd.Flags(), &gameId)
 	if runtime.GOOS != "linux" {
 		revertCmd.Flags().BoolVarP(
 			&RemoveUserCert,

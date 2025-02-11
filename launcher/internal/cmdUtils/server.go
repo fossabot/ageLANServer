@@ -13,11 +13,11 @@ import (
 	"strings"
 )
 
-func SelectBestServerIp(ips []string) (ok bool, ip string) {
+func SelectBestServerIp(domain string, ips []string) (ok bool, ip string) {
 	var successIps []net.IP
 
 	for _, curIp := range ips {
-		if server.LanServer(curIp, true) {
+		if server.LanServer(curIp, domain, true) {
 			parsedIp := net.ParseIP(curIp)
 			if parsedIp.IsLoopback() {
 				return true, curIp
@@ -124,7 +124,7 @@ func ListenToServerAnnouncementsAndSelectBestIp(gameId string, multicastIPs []ne
 		}
 		if len(servers) == 1 {
 			fmt.Printf("Found a single 'server' \"%s\", will connect to it...\n", serverTags[0])
-			ok, ip = SelectBestServerIp(serversStr[0])
+			ok, ip = SelectBestServerIp(common.Domain(gameId), serversStr[0])
 			if !ok {
 				fmt.Println("'Server' is not reachable. Check the client can connect to", ip, "on TCP port 443 (HTTPS)")
 				errorCode = internal.ErrServerUnreachable
@@ -147,7 +147,7 @@ func ListenToServerAnnouncementsAndSelectBestIp(gameId string, multicastIPs []ne
 					break
 				}
 				ips := serversStr[option-1]
-				ok, ip = SelectBestServerIp(ips)
+				ok, ip = SelectBestServerIp(common.Domain(gameId), ips)
 				if ok {
 					break
 				} else {
@@ -171,7 +171,7 @@ func (c *Config) StartServer(executable string, args []string, stop bool, canTru
 		fmt.Println("Found 'server' executable path:", serverExecutablePath)
 	}
 
-	if exists, certificateFolder, cert := common.CertificatePair(serverExecutablePath); !exists || server.CertificateSoonExpired(cert) {
+	if exists, certificateFolder, cert := common.CertificatePair(c.gameId, serverExecutablePath); !exists || server.CertificateSoonExpired(cert) {
 		if !canTrustCertificate {
 			fmt.Println("serverStart is true and canTrustCertificate is false. Certificate pair is missing or soon expired. Generate your own certificates manually.")
 			errorCode = internal.ErrServerCertMissingExpired
@@ -182,7 +182,7 @@ func (c *Config) StartServer(executable string, args []string, stop bool, canTru
 			errorCode = internal.ErrServerCertDirectory
 			return
 		}
-		if result := server.GenerateCertificatePair(certificateFolder); !result.Success() {
+		if result := server.GenerateCertificatePair(c.gameId, certificateFolder); !result.Success() {
 			fmt.Println("Failed to generate certificate pair. Check the folder and its permissions")
 			errorCode = internal.ErrServerCertCreate
 			if result.Err != nil {
@@ -203,7 +203,7 @@ func (c *Config) StartServer(executable string, args []string, stop bool, canTru
 	}
 	var result *commonExecutor.Result
 	var serverExe string
-	result, serverExe, ip = server.StartServer(stopStr, executable, args)
+	result, serverExe, ip = server.StartServer(common.Domain(c.gameId), stopStr, executable, args)
 	if result.Success() {
 		fmt.Println("'Server' started.")
 		if stop {

@@ -73,6 +73,7 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 	communityEventGroup.HandleFunc("GET", "/getAvailableCommunityEvents", communityEvent.GetAvailableCommunityEvents)
 
 	challengeGroup := gameGroup.Subgroup("/challenge")
+	// TODO: Check if it applies to AoM
 	if gameSet.ContainsOne(common.GameAoE3) {
 		challengeGroup.HandleFunc("POST", "/updateProgress", challenge.UpdateProgress)
 	}
@@ -80,7 +81,7 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 	if gameSet.ContainsOne(common.GameAoE3) {
 		ChallengeGroup.HandleFunc("POST", "/getChallengeProgress", challenge.GetChallengeProgress)
 	}
-	if gameSet.ContainsOne(common.GameAoE2) {
+	if gameSet.ContainsAny(common.GameAoE2, common.GameAoM) {
 		ChallengeGroup.HandleFunc("GET", "/getChallengeProgress", challenge.GetChallengeProgress)
 	}
 	ChallengeGroup.HandleFunc("GET", "/getChallenges", challenge.GetChallenges)
@@ -99,6 +100,7 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 	accountGroup.HandleFunc("POST", "/FindProfilesByPlatformID", account.FindProfilesByPlatformID)
 	accountGroup.HandleFunc("GET", "/FindProfiles", account.FindProfiles)
 	accountGroup.HandleFunc("GET", "/getProfileName", account.GetProfileName)
+	// TODO: Check if it applies to AoM
 	if gameSet.ContainsOne(common.GameAoE3) {
 		accountGroup.HandleFunc("GET", "/getProfileProperty", account.GetProfileProperty)
 	}
@@ -107,7 +109,7 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 	if gameSet.ContainsOne(common.GameAoE3) {
 		LeaderboardGroup.HandleFunc("POST", "/getRecentMatchHistory", leaderboard.GetRecentMatchHistory)
 	}
-	if gameSet.ContainsOne(common.GameAoE2) {
+	if gameSet.ContainsAny(common.GameAoE2, common.GameAoM) {
 		LeaderboardGroup.HandleFunc("GET", "/getRecentMatchHistory", leaderboard.GetRecentMatchHistory)
 	}
 	LeaderboardGroup.HandleFunc("GET", "/getLeaderBoard", leaderboard.GetLeaderBoard)
@@ -115,6 +117,7 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 	LeaderboardGroup.HandleFunc("GET", "/getStatGroupsByProfileIDs", leaderboard.GetStatGroupsByProfileIDs)
 	LeaderboardGroup.HandleFunc("GET", "/getStatsForLeaderboardByProfileName", leaderboard.GetStatsForLeaderboardByProfileName)
 	LeaderboardGroup.HandleFunc("GET", "/getPartyStat", leaderboard.GetPartyStat)
+	// TODO: Check if it applies to AoM
 	if gameSet.ContainsOne(common.GameAoE3) {
 		LeaderboardGroup.HandleFunc("GET", "/getAvatarStatLeaderBoard", leaderboard.GetAvatarStatLeaderBoard)
 	}
@@ -146,23 +149,24 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 	if gameSet.ContainsAny(common.GameAoE1, common.GameAoE3) {
 		advertisementGroup.HandleFunc("POST", "/getLanAdvertisements", advertisement.GetLanAdvertisements)
 	}
-	if gameSet.ContainsOne(common.GameAoE2) {
+	if gameSet.ContainsAny(common.GameAoE2, common.GameAoM) {
 		advertisementGroup.HandleFunc("GET", "/getLanAdvertisements", advertisement.GetLanAdvertisements)
 	}
+	// TODO: Check if it applies to AoM
 	if gameSet.ContainsAny(common.GameAoE1, common.GameAoE3) {
 		advertisementGroup.HandleFunc("POST", "/updatePlatformLobbyID", advertisement.UpdatePlatformLobbyID)
 	}
 	if gameSet.ContainsOne(common.GameAoE3) {
 		advertisementGroup.HandleFunc("POST", "/findObservableAdvertisements", advertisement.FindObservableAdvertisements)
 	}
-	if gameSet.ContainsOne(common.GameAoE2) {
+	if gameSet.ContainsAny(common.GameAoE2, common.GameAoM) {
 		advertisementGroup.HandleFunc("GET", "/findObservableAdvertisements", advertisement.FindObservableAdvertisements)
 	}
 	advertisementGroup.HandleFunc("GET", "/getAdvertisements", advertisement.GetAdvertisements)
 	if gameSet.ContainsAny(common.GameAoE1, common.GameAoE3) {
 		advertisementGroup.HandleFunc("POST", "/findAdvertisements", advertisement.FindAdvertisements)
 	}
-	if gameSet.ContainsOne(common.GameAoE2) {
+	if gameSet.ContainsAny(common.GameAoE2, common.GameAoM) {
 		advertisementGroup.HandleFunc("GET", "/findAdvertisements", advertisement.FindAdvertisements)
 	}
 
@@ -172,7 +176,7 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 	if gameSet.ContainsAny(common.GameAoE1, common.GameAoE3) {
 		chatGroup.HandleFunc("POST", "/getChatChannels", chat.GetChatChannels)
 	}
-	if gameSet.ContainsOne(common.GameAoE2) {
+	if gameSet.ContainsAny(common.GameAoE2, common.GameAoM) {
 		chatGroup.HandleFunc("GET", "/getChatChannels", chat.GetChatChannels)
 	}
 	chatGroup.HandleFunc("GET", "/getOfflineMessages", chat.GetOfflineMessages)
@@ -185,6 +189,7 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 	if gameSet.ContainsOne(common.GameAoE3) {
 		chatGroup.HandleFunc("POST", "/sendText", chat.SendText)
 	}
+	// TODO: Check if it applies to AoM
 	if gameSet.ContainsOne(common.GameAoE3) {
 		chatGroup.HandleFunc("POST", "/sendWhisper", chat.SendWhisper)
 	}
@@ -193,15 +198,15 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 	if gameSet.ContainsAny(common.GameAoE1, common.GameAoE3) {
 		relationshipGroup.HandleFunc("POST", "/getRelationships", relationship.GetRelationships)
 	}
-	if gameSet.ContainsOne(common.GameAoE2) {
+	if gameSet.ContainsAny(common.GameAoE2, common.GameAoM) {
 		relationshipGroup.HandleFunc("GET", "/getRelationships", relationship.GetRelationships)
 	}
 	relationshipGroup.HandleFunc("GET", "/getPresenceData", relationship.GetPresenceData)
 	relationshipGroup.HandleFunc("POST", "/setPresence", relationship.SetPresence)
-	if gameSet.ContainsOne(common.GameAoE3) {
+	if gameSet.ContainsAny(common.GameAoE3, common.GameAoM) {
 		relationshipGroup.HandleFunc("POST", "/setPresenceProperty", relationship.SetPresenceProperty)
 	}
-	if gameSet.ContainsOne(common.GameAoE3) {
+	if gameSet.ContainsAny(common.GameAoE3, common.GameAoM) {
 		relationshipGroup.HandleFunc("POST", "/addfriend", relationship.Addfriend)
 	}
 	relationshipGroup.HandleFunc("POST", "/ignore", relationship.Ignore)
@@ -222,6 +227,7 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 
 	cloudGroup := gameGroup.Subgroup("/cloud")
 	if gameSet.ContainsOne(common.GameAoE3) {
+		// TODO: Check if it applies to AoM
 		cloudGroup.HandleFunc("POST", "/getFileURL", cloud.GetFileURL)
 	}
 	if gameSet.ContainsOne(common.GameAoE2) {
@@ -235,9 +241,10 @@ func Initialize(mux *http.ServeMux, gameSet mapset.Set[string]) {
 
 	// Used for the launcher
 	baseGroup.HandleFunc("GET", "/test", test.Test)
-	if gameSet.ContainsOne(common.GameAoE2) {
+	if gameSet.ContainsAny(common.GameAoE2, common.GameAoM) {
 		baseGroup.HandleFunc("GET", "/wss/", wss.Handle)
 	}
+	// TODO: Check if it applies to AoM
 	if gameSet.ContainsAny(common.GameAoE2, common.GameAoE3) {
 		baseGroup.HandleFunc("GET", "/cloudfiles/", cloudfiles.Cloudfiles)
 	}

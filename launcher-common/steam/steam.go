@@ -24,6 +24,8 @@ func AppId(id string) string {
 		return "813780"
 	case common.GameAoE3:
 		return "933110"
+	case common.GameAoM:
+		return "1934680"
 	default:
 		return ""
 	}

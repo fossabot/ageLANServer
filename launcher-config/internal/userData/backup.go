@@ -24,6 +24,8 @@ func finalPath(gameId string) string {
 		suffix = `Age of Empires 2 DE`
 	case common.GameAoE3:
 		suffix = `Age of Empires 3 DE`
+	case common.GameAoM:
+		suffix = `Age of Mythology Retold`
 	}
 	return filepath.Join(finalPathPrefix, suffix)
 }

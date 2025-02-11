@@ -78,9 +78,9 @@ func (c *Config) MapHosts(host string, canMap bool, alreadySelectedIp bool) (err
 		}
 		mapCDN = true
 	}
-	if !launcherCommon.Matches(host, common.Domain) {
+	if !launcherCommon.Matches(host, common.Domain(c.gameId)) {
 		if !canMap {
-			fmt.Println("serverStart is false and canAddHost is false but 'server' does not match "+common.Domain+". You should have added the host ip mapping to", common.Domain, "in the hosts file (or just set canAddHost to true).")
+			fmt.Println("serverStart is false and canAddHost is false but 'server' does not match "+common.Domain(c.gameId)+". You should have added the host ip mapping to", common.Domain, "in the hosts file (or just set canAddHost to true).")
 			errorCode = internal.ErrConfigIpMap
 			return
 		} else {
@@ -90,7 +90,7 @@ func (c *Config) MapHosts(host string, canMap bool, alreadySelectedIp bool) (err
 			} else {
 				resolvedIps := launcherCommon.HostOrIpToIps(host)
 				var ok bool
-				if ok, ip = SelectBestServerIp(resolvedIps.ToSlice()); !ok {
+				if ok, ip = SelectBestServerIp(common.Domain(c.gameId), resolvedIps.ToSlice()); !ok {
 					fmt.Println("Failed to find a reachable IP for " + host + ".")
 					errorCode = internal.ErrConfigIpMapFind
 					return
@@ -98,8 +98,8 @@ func (c *Config) MapHosts(host string, canMap bool, alreadySelectedIp bool) (err
 			}
 			ips.Add(ip)
 		}
-	} else if !server.CheckConnectionFromServer(common.Domain, true) {
-		fmt.Println("serverStart is false and host matches. " + common.Domain + " must be reachable. Review the host is reachable via this domain to TCP port 443 (HTTPS).")
+	} else if !server.CheckConnectionFromServer(common.Domain(c.gameId), common.Domain(c.gameId), true) {
+		fmt.Println("serverStart is false and host matches. " + common.Domain(c.gameId) + " must be reachable. Review the host is reachable via this domain to TCP port 443 (HTTPS).")
 		errorCode = internal.ErrServerUnreachable
 		return
 	}
@@ -109,7 +109,7 @@ func (c *Config) MapHosts(host string, canMap bool, alreadySelectedIp bool) (err
 			fmt.Print(", authorize 'config-admin-agent' if needed")
 		}
 		fmt.Println("...")
-		if result := executor.RunSetUp("", ips, nil, nil, false, false, mapCDN, true); !result.Success() {
+		if result := executor.RunSetUp(c.gameId, ips, nil, nil, false, false, mapCDN, true); !result.Success() {
 			fmt.Println("Failed to add host.")
 			if result.Err != nil {
 				fmt.Println("Error message: " + result.Err.Error())

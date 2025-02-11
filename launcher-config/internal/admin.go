@@ -18,7 +18,7 @@ var ipc net.Conn = nil
 var encoder *gob.Encoder = nil
 var decoder *gob.Decoder = nil
 
-func RunSetUp(mapIps mapset.Set[string], addCertData []byte, mapCDN bool) (err error, exitCode int) {
+func RunSetUp(gameId string, mapIps mapset.Set[string], addCertData []byte, mapCDN bool) (err error, exitCode int) {
 	exitCode = common.ErrGeneral
 	if mapIps.Cardinality() > 9 {
 		exitCode = launcherCommon.ErrIpMapAddTooMany
@@ -44,17 +44,17 @@ func RunSetUp(mapIps mapset.Set[string], addCertData []byte, mapCDN bool) (err e
 				return
 			}
 		}
-		result := executor.RunSetUp(ips, certificate, mapCDN)
+		result := executor.RunSetUp(gameId, ips, certificate, mapCDN)
 		err, exitCode = result.Err, result.ExitCode
 	}
 	return
 }
 
-func RunRevert(unmapIPs bool, removeCert bool, unmapCDN bool, failfast bool) (err error, exitCode int) {
+func RunRevert(gameId string, unmapIPs bool, removeCert bool, unmapCDN bool, failfast bool) (err error, exitCode int) {
 	if ipc != nil {
 		return runRevertAgent(unmapIPs, removeCert, unmapCDN)
 	}
-	result := executor.RunRevert(unmapIPs, removeCert, unmapCDN, failfast)
+	result := executor.RunRevert(gameId, unmapIPs, removeCert, unmapCDN, failfast)
 	err, exitCode = result.Err, result.ExitCode
 	return
 }
@@ -103,14 +103,14 @@ func ConnectAgentIfNeeded() (err error) {
 	return
 }
 
-func StartAgentIfNeeded() (result *exec.Result) {
+func StartAgentIfNeeded(gameId string) (result *exec.Result) {
 	if ipc != nil {
 		return
 	}
 	fmt.Println("Starting 'agent'...")
 	preAgentStart()
 	file := common.GetExeFileName(true, common.LauncherConfigAdminAgent)
-	result = exec.Options{File: file, AsAdmin: true, Pid: true}.Exec()
+	result = exec.Options{File: file, AsAdmin: true, Pid: true, Args: []string{gameId}}.Exec()
 	if result.Success() {
 		postAgentStart(file)
 	}

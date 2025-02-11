@@ -13,7 +13,7 @@ var mappedCdn = false
 var mappedIps = false
 var addedCert = false
 
-func handleClient(c net.Conn) (exit bool) {
+func handleClient(gameId string, c net.Conn) (exit bool) {
 	exit = false
 	decoder := gob.NewDecoder(c)
 	encoder := gob.NewEncoder(c)
@@ -30,10 +30,10 @@ func handleClient(c net.Conn) (exit bool) {
 		switch action {
 		case launcherCommon.ConfigAdminIpcRevert:
 			_ = encoder.Encode(common.ErrSuccess)
-			exitCode = handleRevert(decoder)
+			exitCode = handleRevert(gameId, decoder)
 		case launcherCommon.ConfigAdminIpcSetup:
 			_ = encoder.Encode(common.ErrSuccess)
-			exitCode = handleSetUp(decoder)
+			exitCode = handleSetUp(gameId, decoder)
 		case launcherCommon.ConfigAdminIpcExit:
 			err = c.Close()
 			if err != nil {
@@ -49,14 +49,14 @@ func handleClient(c net.Conn) (exit bool) {
 	return
 }
 
-func checkCertificateValidity(cert *x509.Certificate) bool {
+func checkCertificateValidity(domain string, cert *x509.Certificate) bool {
 	if cert == nil {
 		return false
 	}
-	if cert.Subject.CommonName != common.Domain {
+	if cert.Subject.CommonName != domain {
 		return false
 	}
-	if len(cert.DNSNames) != 1 || cert.DNSNames[0] != common.Domain {
+	if len(cert.DNSNames) != 1 || cert.DNSNames[0] != domain {
 		return false
 	}
 	return true
@@ -66,7 +66,7 @@ func checkIps(ips []net.IP) bool {
 	return len(ips) < 10
 }
 
-func handleSetUp(decoder *gob.Decoder) int {
+func handleSetUp(gameId string, decoder *gob.Decoder) int {
 	var msg launcherCommon.ConfigAdminIpcSetupCommand
 	if err := decoder.Decode(&msg); err != nil {
 		return ErrDecode
@@ -86,11 +86,11 @@ func handleSetUp(decoder *gob.Decoder) int {
 			return ErrCertAlreadyAdded
 		}
 		cert, _ = x509.ParseCertificate(msg.Certificate)
-		if !checkCertificateValidity(cert) {
+		if !checkCertificateValidity(common.Domain(gameId), cert) {
 			return ErrCertInvalid
 		}
 	}
-	result := executor.RunSetUp(msg.IPs, cert, msg.CDN)
+	result := executor.RunSetUp(gameId, msg.IPs, cert, msg.CDN)
 	if result.Success() {
 		mappedIps = mappedIps || len(msg.IPs) > 0
 		mappedCdn = mappedCdn || msg.CDN
@@ -99,7 +99,7 @@ func handleSetUp(decoder *gob.Decoder) int {
 	return result.ExitCode
 }
 
-func handleRevert(decoder *gob.Decoder) int {
+func handleRevert(gameId string, decoder *gob.Decoder) int {
 	var msg launcherCommon.ConfigAdminIpcRevertCommand
 	if err := decoder.Decode(&msg); err != nil {
 		return ErrDecode
@@ -110,7 +110,7 @@ func handleRevert(decoder *gob.Decoder) int {
 	if !revertIps && !revertCert {
 		return common.ErrSuccess
 	}
-	result := executor.RunRevert(revertIps, revertCert, revertCdn, true)
+	result := executor.RunRevert(gameId, revertIps, revertCert, revertCdn, true)
 	if result.Success() {
 		mappedCdn = !revertCdn
 		mappedIps = !revertIps
@@ -119,7 +119,7 @@ func handleRevert(decoder *gob.Decoder) int {
 	return result.ExitCode
 }
 
-func RunIpcServer() (errorCode int) {
+func RunIpcServer(gameId string) (errorCode int) {
 	l, err := SetupIpcServer()
 	if err != nil {
 		errorCode = ErrListen
@@ -136,7 +136,7 @@ func RunIpcServer() (errorCode int) {
 		if err != nil {
 			continue
 		}
-		if handleClient(conn) {
+		if handleClient(gameId, conn) {
 			break
 		}
 	}

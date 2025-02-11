@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/luskaner/ageLANServer/common"
+	commonCmd "github.com/luskaner/ageLANServer/common/cmd"
 	launcherCommon "github.com/luskaner/ageLANServer/launcher-common"
 	"github.com/spf13/cobra"
 	"net"
@@ -11,6 +11,7 @@ import (
 var MapIPs []net.IP
 var AddLocalCertData []byte
 var MapCDN bool
+var GameId string
 
 func InitSetUp(cmd *cobra.Command) {
 	cmd.Flags().IPSliceVarP(
@@ -18,7 +19,7 @@ func InitSetUp(cmd *cobra.Command) {
 		"ip",
 		"i",
 		nil,
-		fmt.Sprintf("IP to resolve to '%s' in local DNS server (up to 9)", common.Domain),
+		fmt.Sprintf("IP to resolve in local DNS server (up to 9)"),
 	)
 	cmd.Flags().BoolVarP(
 		&MapCDN,
@@ -34,4 +35,5 @@ func InitSetUp(cmd *cobra.Command) {
 		nil,
 		"Add the certificate to the local machine's trusted root store",
 	)
+	commonCmd.GameVarCommand(cmd.Flags(), &GameId)
 }

@@ -452,7 +452,7 @@ func (adv *MainAdvertisement) Encode(gameId string) i.A {
 		adv.platformSessionId,
 		"0",
 	}
-	if gameId == common.GameAoE2 {
+	if gameId == common.GameAoE2 || gameId == common.GameAoM {
 		response = append(
 			response,
 			"",
@@ -466,7 +466,7 @@ func (adv *MainAdvertisement) Encode(gameId string) i.A {
 		started,
 		adv.description,
 	)
-	if gameId == common.GameAoE2 {
+	if gameId == common.GameAoE2 || gameId == common.GameAoM {
 		response = append(response, adv.description)
 	}
 	response = append(

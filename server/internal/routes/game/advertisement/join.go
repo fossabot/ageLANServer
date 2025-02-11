@@ -70,7 +70,8 @@ func Join(w http.ResponseWriter, r *http.Request) {
 		q.Team,
 	)
 	var relayRegion string
-	if gameTitle == common.GameAoE2 {
+	// TODO: Check if it's correct for AoM
+	if gameTitle == common.GameAoE2 || gameTitle == common.GameAoM {
 		relayRegion = matchingAdv.GetRelayRegion()
 	}
 	response := i.A{

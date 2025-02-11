@@ -8,9 +8,9 @@ import (
 	"net"
 )
 
-func RunSetUp(IPs []net.IP, certificate *x509.Certificate, CDN bool) (result *exec.Result) {
+func RunSetUp(gameId string, IPs []net.IP, certificate *x509.Certificate, CDN bool) (result *exec.Result) {
 	args := make([]string, 0)
-	args = append(args, "setup")
+	args = append(args, "setup", "-e", gameId)
 	if IPs != nil {
 		for _, ip := range IPs {
 			args = append(args, "-i")
@@ -28,9 +28,9 @@ func RunSetUp(IPs []net.IP, certificate *x509.Certificate, CDN bool) (result *ex
 	return
 }
 
-func RunRevert(IPs bool, certificate bool, CDN bool, failfast bool) (result *exec.Result) {
+func RunRevert(gameId string, IPs bool, certificate bool, CDN bool, failfast bool) (result *exec.Result) {
 	args := make([]string, 0)
-	args = append(args, "revert")
+	args = append(args, "revert", "-e", gameId)
 	if failfast {
 		if IPs {
 			args = append(args, "-i")

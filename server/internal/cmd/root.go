@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	mapset "github.com/deckarep/golang-set/v2"
@@ -39,7 +40,7 @@ var (
 	cfgFile string
 	rootCmd = &cobra.Command{
 		Use:   filepath.Base(os.Args[0]),
-		Short: "server is a service acting as " + common.Domain + " for LAN features in AoE: DE, AoE 2:DE and AoE 3:DE.",
+		Short: "server is a service for LAN features in AoE: DE, AoE 2: DE, AoE 3: DE and AoM: RT.",
 		Run: func(_ *cobra.Command, _ []string) {
 			lock := &pidLock.Lock{}
 			if err := lock.Lock(); err != nil {
@@ -53,12 +54,14 @@ var (
 				_ = lock.Unlock()
 				os.Exit(internal.ErrGames)
 			}
+			domainSet := mapset.NewThreadUnsafeSet[string]()
 			for game := range gameSet.Iter() {
 				if !common.SupportedGames.ContainsOne(game) {
 					fmt.Println("Invalid game specified:", game)
 					_ = lock.Unlock()
 					os.Exit(internal.ErrGames)
 				}
+				domainSet.Add(common.Domain(game))
 			}
 			fmt.Printf("Games: %s\n", strings.Join(gameSet.ToSlice(), ", "))
 			if executor.IsAdmin() {
@@ -106,12 +109,28 @@ var (
 				_ = lock.Unlock()
 				os.Exit(internal.ErrCertDirectory)
 			}
+			certs := map[string]tls.Certificate{}
+			for domain := range domainSet.Iter() {
+				cert, err := tls.LoadX509KeyPair(filepath.Join(certificatePairFolder, common.Cert(domain)), filepath.Join(certificatePairFolder, common.Key(domain)))
+				if err != nil {
+					fmt.Println("Failed to load certificate pair")
+					_ = lock.Unlock()
+					os.Exit(internal.ErrCertLoad)
+				}
+				certs[domain] = cert
+			}
+			tlsConfig := &tls.Config{
+				GetCertificate: func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+					if cert, ok := certs[clientHello.ServerName]; ok {
+						return &cert, nil
+					}
+					return nil, nil
+				},
+			}
+
 			stop := make(chan os.Signal, 1)
 			signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-
 			handler := handlers.LoggingHandler(writer, sessionMux)
-			certFile := filepath.Join(certificatePairFolder, common.Cert)
-			keyFile := filepath.Join(certificatePairFolder, common.Key)
 			var servers []*http.Server
 			customLogger := log.New(&internal.CustomWriter{OriginalWriter: os.Stderr}, "", log.LstdFlags)
 			var multicastIP net.IP
@@ -135,6 +154,7 @@ var (
 					Handler:     handler,
 					ErrorLog:    customLogger,
 					IdleTimeout: time.Second * 20,
+					TLSConfig:   tlsConfig,
 				}
 
 				fmt.Println("Listening on " + server.Addr)
@@ -144,7 +164,7 @@ var (
 							ip.Announce(addr, multicastIP, announcePort, broadcast, multicast)
 						}()
 					}
-					err := server.ListenAndServeTLS(certFile, keyFile)
+					err := server.ListenAndServeTLS("", "")
 					if err != nil && !errors.Is(err, http.ErrServerClosed) {
 						fmt.Println("Failed to start 'server'")
 						fmt.Println(err)

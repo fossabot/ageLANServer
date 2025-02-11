@@ -31,10 +31,10 @@ func returnError(gameId string, w *http.ResponseWriter) {
 		0,
 	)
 
-	if gameId != common.GameAoE2 {
+	if gameId != common.GameAoE2 && gameId != common.GameAoM {
 		response = append(response, "0")
 	}
-	if gameId == common.GameAoE2 {
+	if gameId == common.GameAoE2 || gameId == common.GameAoM {
 		response = append(
 			response,
 			0,
@@ -66,7 +66,7 @@ func Host(w http.ResponseWriter, r *http.Request) {
 
 	var adv shared.AdvertisementHostRequest
 	if err := i.Bind(r, &adv); err == nil {
-		if gameTitle != common.GameAoE2 {
+		if gameTitle != common.GameAoE2 && gameTitle != common.GameAoM {
 			adv.Joinable = true
 		}
 		u, ok := game.Users().GetUserById(adv.HostId)
@@ -104,10 +104,10 @@ func Host(w http.ResponseWriter, r *http.Request) {
 			0,
 		)
 
-		if gameTitle != common.GameAoE2 {
+		if gameTitle != common.GameAoE2 && gameTitle != common.GameAoM {
 			response = append(response, "0")
 		}
-		if gameTitle == common.GameAoE2 {
+		if gameTitle == common.GameAoE2 || gameTitle == common.GameAoM {
 			response = append(
 				response,
 				0,

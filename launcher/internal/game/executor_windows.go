@@ -17,6 +17,7 @@ func appNameSuffix(id string) string {
 		return "MSPhoenix"
 	case common.GameAoE3:
 		return "MSGPBoston"
+		// TODO: Add AoM
 	default:
 		return ""
 	}

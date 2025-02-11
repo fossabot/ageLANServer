@@ -9,7 +9,7 @@ import (
 )
 
 func (c *Config) AddCert(canAdd string) (errorCode int) {
-	if !server.CheckConnectionFromServer(common.Domain, false) {
+	if !server.CheckConnectionFromServer(common.Domain(c.gameId), common.Domain(c.gameId), false) {
 		if canAdd != "false" {
 			certMsg := fmt.Sprintf("Adding 'server' certificate to %s store", canAdd)
 			if canAdd == "user" {
@@ -22,9 +22,9 @@ func (c *Config) AddCert(canAdd string) (errorCode int) {
 			fmt.Println(certMsg)
 			var addUserCertData []byte
 			var addLocalCertData []byte
-			cert := server.ReadCertificateFromServer(common.Domain)
+			cert := server.ReadCertificateFromServer(common.Domain(c.gameId))
 			if cert == nil {
-				fmt.Println("Failed to read certificate from " + common.Domain + ". Try to access it with your browser and checking the certificate, this host must be reachable via TCP port 443 (HTTPS)")
+				fmt.Println("Failed to read certificate from " + common.Domain(c.gameId) + ". Try to access it with your browser and checking the certificate, this host must be reachable via TCP port 443 (HTTPS)")
 				errorCode = internal.ErrReadCert
 				return
 			} else if canAdd == "local" {
@@ -32,8 +32,8 @@ func (c *Config) AddCert(canAdd string) (errorCode int) {
 			} else {
 				addUserCertData = cert.Raw
 			}
-			if result := executor.RunSetUp("", nil, addUserCertData, addLocalCertData, false, false, false, false); !result.Success() {
-				fmt.Println("Failed to trust certificate from " + common.Domain + ".")
+			if result := executor.RunSetUp(c.gameId, nil, addUserCertData, addLocalCertData, false, false, false, false); !result.Success() {
+				fmt.Println("Failed to trust certificate from " + common.Domain(c.gameId) + ".")
 				errorCode = internal.ErrConfigCertAdd
 				if result.Err != nil {
 					fmt.Println("Error message: " + result.Err.Error())
@@ -47,22 +47,22 @@ func (c *Config) AddCert(canAdd string) (errorCode int) {
 			} else {
 				c.UserCert()
 			}
-			if !server.CheckConnectionFromServer(common.Domain, false) {
-				fmt.Println(common.Domain + " must have been trusted automatically at this point.")
+			if !server.CheckConnectionFromServer(common.Domain(c.gameId), common.Domain(c.gameId), false) {
+				fmt.Println(common.Domain(c.gameId) + " must have been trusted automatically at this point.")
 				errorCode = internal.ErrServerConnectSecure
 				return
-			} else if !server.LanServer(common.Domain, false) {
-				fmt.Println("Something went wrong, " + common.Domain + " either points to the original 'server' or there is a certificate issue.")
+			} else if !server.LanServer(common.Domain(c.gameId), common.Domain(c.gameId), false) {
+				fmt.Println("Something went wrong, " + common.Domain(c.gameId) + " either points to the original 'server' or there is a certificate issue.")
 				errorCode = internal.ErrTrustCert
 				return
 			}
 		} else {
-			fmt.Println(common.Domain + " must have been trusted manually. If you want it automatically, set config/option CanTrustCertificate to 'user' or 'local'.")
+			fmt.Println(common.Domain(c.gameId) + " must have been trusted manually. If you want it automatically, set config/option CanTrustCertificate to 'user' or 'local'.")
 			errorCode = internal.ErrConfigCert
 			return
 		}
-	} else if !server.LanServer(common.Domain, false) {
-		fmt.Println("Something went wrong, " + common.Domain + " either points to the original 'server' or there is a certificate issue.")
+	} else if !server.LanServer(common.Domain(c.gameId), common.Domain(c.gameId), false) {
+		fmt.Println("Something went wrong, " + common.Domain(c.gameId) + " either points to the original 'server' or there is a certificate issue.")
 		errorCode = internal.ErrServerConnectSecure
 	}
 	return

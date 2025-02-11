@@ -14,7 +14,7 @@ func Relationships(gameTitle string, users *models.MainUsers, user *models.MainU
 	})
 	friends := profileInfo
 	lastConnection := profileInfo
-	if gameTitle == common.GameAoE3 {
+	if gameTitle == common.GameAoE3 || gameTitle == common.GameAoM {
 		lastConnection = []i.A{}
 	} else {
 		friends = []i.A{}
@@ -24,7 +24,7 @@ func Relationships(gameTitle string, users *models.MainUsers, user *models.MainU
 
 func GetRelationships(w http.ResponseWriter, r *http.Request) {
 	// As we don't have knowledge of Steam/Xbox friends, nor it is supposed to be many players on the server
-	// just return all online users as if they were friends (AoE3) or last connections (AoE2)
+	// just return all online users as if they were friends (AoE3/AoM) or last connections (AoE2)
 	sess, _ := middleware.Session(r)
 	game := models.G(r)
 	users := game.Users()

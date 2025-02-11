@@ -10,7 +10,7 @@ LogToConsole = false
 GeneratePlatformUserId = false
 
 # Games that the server will accept. "age1" (AoE DE), "age2" (AoE II DE) and "age3" (AoE III DE) are supported.
-Games = ['age1', 'age2', 'age3']
+Games = ['age1', 'age2', 'age3', 'athens']
 
 [Announcement]
 

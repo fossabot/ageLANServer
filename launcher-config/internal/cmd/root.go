@@ -13,7 +13,6 @@ var RootCmd = &cobra.Command{
 }
 
 var Version string
-var gameId string
 
 func Execute() error {
 	RootCmd.Version = Version

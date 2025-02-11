@@ -171,7 +171,6 @@ var (
 				return
 			}
 
-			config.SetGameId(gameId)
 			sigs := make(chan os.Signal, 1)
 			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 			go func() {
@@ -292,7 +291,7 @@ var (
 					errorCode = internal.ErrInvalidServerHost
 					return
 				}
-				if !server.CheckConnectionFromServer(serverHost, true) {
+				if !server.CheckConnectionFromServer(serverHost, common.Domain(gameId), true) {
 					fmt.Println("serverStart is false. " + serverHost + " must be reachable. Review the host is correct, the 'server' is started and you can connect to TCP port 443 (HTTPS).")
 					errorCode = internal.ErrInvalidServerStart
 					return

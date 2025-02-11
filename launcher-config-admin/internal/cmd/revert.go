@@ -60,7 +60,7 @@ var revertCmd = &cobra.Command{
 		if cmd.UnmapCDN || cmd.UnmapIPs {
 			hsts := mapset.NewThreadUnsafeSet[string]()
 			if cmd.UnmapIPs {
-				hsts.Add(common.Domain)
+				hsts.Add(common.Domain(cmd.GameId))
 			}
 			if cmd.UnmapCDN {
 				hsts.Add(launcherCommon.CDNDomain)

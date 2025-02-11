@@ -12,22 +12,23 @@ import (
 	"time"
 )
 
-func TlsConfig(insecureSkipVerify bool) *tls.Config {
+func TlsConfig(insecureSkipVerify bool, domain string) *tls.Config {
 	return &tls.Config{
 		InsecureSkipVerify: insecureSkipVerify,
+		ServerName:         domain,
 	}
 }
 
-func connectToServer(host string, insecureSkipVerify bool) *tls.Conn {
-	conn, err := tls.Dial("tcp4", net.JoinHostPort(host, "443"), TlsConfig(insecureSkipVerify))
+func connectToServer(host string, domain string, insecureSkipVerify bool) *tls.Conn {
+	conn, err := tls.Dial("tcp4", net.JoinHostPort(host, "443"), TlsConfig(insecureSkipVerify, domain))
 	if err != nil {
 		return nil
 	}
 	return conn
 }
 
-func CheckConnectionFromServer(host string, insecureSkipVerify bool) bool {
-	conn := connectToServer(host, insecureSkipVerify)
+func CheckConnectionFromServer(host string, domain string, insecureSkipVerify bool) bool {
+	conn := connectToServer(host, domain, insecureSkipVerify)
 	if conn == nil {
 		return false
 	}
@@ -38,7 +39,7 @@ func CheckConnectionFromServer(host string, insecureSkipVerify bool) bool {
 }
 
 func ReadCertificateFromServer(host string) *x509.Certificate {
-	conn := connectToServer(host, true)
+	conn := connectToServer(host, host, true)
 	if conn == nil {
 		return nil
 	}
@@ -52,13 +53,13 @@ func ReadCertificateFromServer(host string) *x509.Certificate {
 	return nil
 }
 
-func GenerateCertificatePair(certificateFolder string) (result *exec.Result) {
+func GenerateCertificatePair(gameId string, certificateFolder string) (result *exec.Result) {
 	baseFolder := filepath.Join(certificateFolder, "..", "..")
 	exePath := filepath.Join(baseFolder, common.GetExeFileName(false, common.ServerGenCert))
 	if _, err := os.Stat(exePath); err != nil {
 		return nil
 	}
-	result = exec.Options{File: exePath, Wait: true, Args: []string{"-r"}, ExitCode: true}.Exec()
+	result = exec.Options{File: exePath, Wait: true, Args: []string{"-r", "-e", gameId}, ExitCode: true}.Exec()
 	return
 }
 

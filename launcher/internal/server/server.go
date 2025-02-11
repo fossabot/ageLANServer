@@ -24,7 +24,7 @@ import (
 var autoServerDir = []string{fmt.Sprintf(`%c%s%c`, filepath.Separator, common.Server, filepath.Separator), fmt.Sprintf(`%c..%c`, filepath.Separator, filepath.Separator), fmt.Sprintf(`%c..%c%s%c`, filepath.Separator, filepath.Separator, common.Server, filepath.Separator)}
 var autoServerName = []string{common.GetExeFileName(true, common.Server)}
 
-func StartServer(stop string, executable string, args []string) (result *commonExecutor.Result, executablePath string, ip string) {
+func StartServer(domain string, stop string, executable string, args []string) (result *commonExecutor.Result, executablePath string, ip string) {
 	executablePath = GetExecutablePath(executable)
 	if executablePath == "" {
 		return
@@ -40,7 +40,7 @@ func StartServer(stop string, executable string, args []string) (result *commonE
 		// Wait up to 30s for server to start
 		for i := 0; i < 30; i++ {
 			for curIp := range launcherCommon.HostOrIpToIps(netip.IPv4Unspecified().String()).Iter() {
-				if LanServer(curIp, true) {
+				if LanServer(curIp, domain, true) {
 					ip = curIp
 					return
 				}
@@ -81,15 +81,22 @@ func GetExecutablePath(executable string) string {
 	return executable
 }
 
-func LanServer(host string, insecureSkipVerify bool) bool {
+func LanServer(host string, serverName string, insecureSkipVerify bool) bool {
 	tr := &http.Transport{
-		TLSClientConfig: TlsConfig(insecureSkipVerify),
+		TLSClientConfig: TlsConfig(insecureSkipVerify, serverName),
 	}
 	client := &http.Client{Transport: tr}
-	resp, err := client.Head(fmt.Sprintf("https://%s/test", host))
+	req, err := http.NewRequest("HEAD", fmt.Sprintf("https://%s/test", host), nil)
 	if err != nil {
 		return false
 	}
+	req.Host = serverName
+	var resp *http.Response
+	resp, err = client.Do(req)
+	if err != nil {
+		return false
+	}
+	_ = resp.Body.Close()
 	return resp.StatusCode == http.StatusOK
 }
 

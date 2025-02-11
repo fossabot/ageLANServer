@@ -13,16 +13,16 @@ import (
 	"time"
 )
 
-func GenerateCertificatePair(folder string) bool {
+func GenerateCertificatePair(gameId, folder string) bool {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return false
 	}
-
+	domain := common.Domain(gameId)
 	template := &x509.Certificate{
 		SerialNumber: big.NewInt(1),
 		Subject: pkix.Name{
-			CommonName:   common.Domain,
+			CommonName:   domain,
 			Organization: []string{common.CertSubjectOrganization},
 		},
 		NotBefore: time.Now(),
@@ -31,7 +31,7 @@ func GenerateCertificatePair(folder string) bool {
 		ExtKeyUsage: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageServerAuth,
 		},
-		DNSNames: []string{common.Domain},
+		DNSNames: []string{domain},
 	}
 
 	certBytes, err := x509.CreateCertificate(rand.Reader, template, template, &privateKey.PublicKey, privateKey)
@@ -39,7 +39,7 @@ func GenerateCertificatePair(folder string) bool {
 		return false
 	}
 
-	certFile, err := os.Create(filepath.Join(folder, common.Cert))
+	certFile, err := os.Create(filepath.Join(folder, common.Cert(domain)))
 	if err != nil {
 		return false
 	}
@@ -49,12 +49,12 @@ func GenerateCertificatePair(folder string) bool {
 	defer func() {
 		_ = certFile.Close()
 		if delCertFile {
-			_ = os.Remove(filepath.Join(folder, common.Cert))
+			_ = os.Remove(filepath.Join(folder, common.Cert(domain)))
 		}
 		if keyFile != nil {
 			_ = keyFile.Close()
 			if delKeyFile {
-				_ = os.Remove(filepath.Join(folder, common.Key))
+				_ = os.Remove(filepath.Join(folder, common.Key(domain)))
 			}
 		}
 	}()
@@ -66,7 +66,7 @@ func GenerateCertificatePair(folder string) bool {
 		return false
 	}
 
-	keyFile, err = os.Create(filepath.Join(folder, common.Key))
+	keyFile, err = os.Create(filepath.Join(folder, common.Key(domain)))
 
 	if err != nil {
 		delCertFile = true

@@ -22,16 +22,16 @@ func CertificatePairFolder(executablePath string) string {
 	return folder
 }
 
-func CertificatePair(executablePath string) (ok bool, parentDir string, cert string) {
+func CertificatePair(gameId string, executablePath string) (ok bool, parentDir string, cert string) {
 	parentDir = CertificatePairFolder(executablePath)
 	if parentDir == "" {
 		return
 	}
-	cert = filepath.Join(parentDir, Cert)
+	cert = filepath.Join(parentDir, Cert(Domain(gameId)))
 	if _, err := os.Stat(cert); os.IsNotExist(err) {
 		return
 	}
-	if _, err := os.Stat(filepath.Join(parentDir, Key)); os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(parentDir, Key(Domain(gameId)))); os.IsNotExist(err) {
 		return
 	}
 	ok = true

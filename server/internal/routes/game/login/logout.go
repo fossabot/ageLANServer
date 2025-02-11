@@ -29,7 +29,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(100 * time.Millisecond)
 	}
 	relationship.ChangePresence(users, u, 0)
-	if game.Title() == common.GameAoE3 {
+	if game.Title() == common.GameAoE3 || game.Title() == common.GameAoM {
 		profileInfo := u.GetProfileInfo(false)
 		for user := range users.GetUserIds() {
 			if user != u.GetId() {
